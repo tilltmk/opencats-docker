@@ -1,0 +1,41 @@
+version: '3.1'
+
+services:
+  opencats:
+    container_name: opencats
+    build: .
+    ports:
+      - "4000:80"
+    links:
+      - opencats-db
+
+  opencats-db:
+    container_name: opencats-db
+    image: mysql:5.5
+    ports:
+      - "3003:3306"
+    volumes:
+      - /var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password-here
+      MYSQL_DATABASE: opencats
+      MYSQL_USER: user-here
+      MYSQL_PASSWORD: password-here
+
+# optional:
+
+  phpmyadmin:  
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8090:80"
+    links:
+      - opencats-db:db
+    environment:
+      PMA_HOST: db
+      PMA_USER: user-here
+      PMA_PASSWORD: password-here
+
+networks:
+  opencats_network:
+    driver: overlay
