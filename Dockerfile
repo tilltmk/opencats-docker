@@ -2,6 +2,7 @@ FROM php:7.2-apache
 
 RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
+    sudo \
     libjpeg62-turbo-dev \
     libmcrypt-dev \
     libncurses5-dev \
