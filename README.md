@@ -7,7 +7,7 @@ Installation:
 3. Start the Docker containers with the command: ```bash docker-compose up -d ```
 4. Open a web browser and go to http://localhost:4000 to access the OpenCATS application.
 5. Setup database connection with your custom credentials from the docker-compose file and with the database hostname opencats-db
-6. (Optional) If you want to use phpMyAdmin, go to http://localhost:8080.
+6. (Optional) If you want to use phpMyAdmin, go to http://localhost:8090.
 
 ## Configuration:
 
