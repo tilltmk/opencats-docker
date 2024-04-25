@@ -1,5 +1,6 @@
 # 🐳 OpenCATS Docker Setup
 This repository contains one of the rare Docker setups for OpenCATS that works.
+
 [![Docker](https://github.com/tilltmk/opencats-docker/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/tilltmk/opencats-docker/actions/workflows/docker-publish.yml) 
 
 Installation:
