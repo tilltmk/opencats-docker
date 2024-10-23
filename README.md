@@ -1,8 +1,6 @@
 # 🐳 OpenCATS Docker Setup
 This repository contains one of the rare Docker setups for OpenCATS that works.
 
-[![Docker](https://github.com/tilltmk/opencats-docker/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/tilltmk/opencats-docker/actions/workflows/docker-publish.yml) 
-
 Installation:
 1. Clone this repository to your local system: ```git clone https://github.com/tilltmk/opencats-docker opencats && cd opencats-docker```
 2. Open the file docker-compose.yml and update the environment variables under opencats-db and phpmyadmin with your own values.
