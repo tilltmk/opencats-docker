@@ -1,49 +1,43 @@
-FROM php:7.2-apache
+FROM php:7.2-apache-stretch
 
-RUN apt-get update && apt-get install -y \
+RUN echo "deb http://archive.debian.org/debian/ stretch main contrib non-free\n\
+deb http://archive.debian.org/debian-security stretch/updates main contrib non-free" > /etc/apt/sources.list && \
+    apt-get -o Acquire::Check-Valid-Until=false update && \
+    apt-get install -y \
     libfreetype6-dev \
-    sudo \
     libjpeg62-turbo-dev \
-    libmcrypt-dev \
-    libncurses5-dev \
-    libicu-dev \
-    libmemcached-dev \
-    libcurl4-openssl-dev \
     libpng-dev \
-    libgmp-dev \
     libxml2-dev \
     libldap2-dev \
+    libgmp-dev \
+    libicu-dev \
+    sudo \
+    libncurses5-dev \
+    libmemcached-dev \
+    libcurl4-openssl-dev \
+    libmcrypt-dev \
     curl \
     zlib1g-dev \
-    msmtp \  
+    msmtp \
     antiword \
     poppler-utils \
     html2text \
     unrtf \
     git \
     unzip \
- && rm -rf /var/lib/apt/lists/* \
- && docker-php-ext-install soap 
+    && rm -rf /var/lib/apt/lists/*
 
-RUN ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/include/gmp.h 
+RUN docker-php-ext-install -j$(nproc) gd
+
+RUN docker-php-ext-install -j$(nproc) soap ldap mysqli pdo_mysql intl gmp zip
+
+RUN ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/include/gmp.h
 
 RUN docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/
-RUN docker-php-ext-install ldap && \
-    docker-php-ext-install mysqli && \
-    docker-php-ext-install pdo_mysql && \
-    docker-php-ext-install soap && \
-    docker-php-ext-install intl && \
-    docker-php-ext-install gd && \
-    docker-php-ext-install gmp && \
-    docker-php-ext-install zip
-
-RUN docker-php-ext-install gd
 
 WORKDIR /tmp
 RUN git clone https://github.com/opencats/OpenCATS.git opencats && \
-    git -C opencats checkout `git -C opencats describe --tags $(git -C opencats rev-list --tags --max-count=1)`
-
-RUN cp -r /tmp/opencats/. /var/www/html/
+    cp -r /tmp/opencats/. /var/www/html/
 
 WORKDIR /var/www/html
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
