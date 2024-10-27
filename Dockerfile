@@ -1,56 +1,60 @@
-FROM php:7.2-apache
+# Verwende das Basis-Image mit PHP 7.2 auf Debian Stretch
+FROM php:7.2-apache-stretch
 
-RUN apt-get update && apt-get install -y \
+# Archivierte Debian Stretch-Repositories hinzufügen
+RUN echo "deb http://archive.debian.org/debian/ stretch main contrib non-free\n\
+deb http://archive.debian.org/debian-security stretch/updates main contrib non-free" > /etc/apt/sources.list && \
+    apt-get -o Acquire::Check-Valid-Until=false update && \
+    apt-get install -y \
     libfreetype6-dev \
-    sudo \
     libjpeg62-turbo-dev \
-    libmcrypt-dev \
-    libncurses5-dev \
-    libicu-dev \
-    libmemcached-dev \
-    libcurl4-openssl-dev \
     libpng-dev \
-    libgmp-dev \
     libxml2-dev \
     libldap2-dev \
+    libgmp-dev \
+    libicu-dev \
+    sudo \
+    libncurses5-dev \
+    libmemcached-dev \
+    libcurl4-openssl-dev \
+    libmcrypt-dev \
     curl \
     zlib1g-dev \
-    msmtp \  
+    msmtp \
     antiword \
     poppler-utils \
     html2text \
     unrtf \
     git \
     unzip \
- && rm -rf /var/lib/apt/lists/* \
- && docker-php-ext-install soap 
+    && rm -rf /var/lib/apt/lists/*
 
-RUN ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/include/gmp.h 
+# GD-Erweiterung ohne spezifische Optionen installieren
+RUN docker-php-ext-install -j$(nproc) gd
 
+# Zusätzliche PHP-Erweiterungen installieren
+RUN docker-php-ext-install -j$(nproc) soap ldap mysqli pdo_mysql intl gmp zip
+
+# GMP-Bibliothek verlinken
+RUN ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/include/gmp.h
+
+# LDAP konfigurieren
 RUN docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/
-RUN docker-php-ext-install ldap && \
-    docker-php-ext-install mysqli && \
-    docker-php-ext-install pdo_mysql && \
-    docker-php-ext-install soap && \
-    docker-php-ext-install intl && \
-    docker-php-ext-install gd && \
-    docker-php-ext-install gmp && \
-    docker-php-ext-install zip
 
-RUN docker-php-ext-install gd
-
+# OpenCATS Repository klonen und Dateien kopieren
 WORKDIR /tmp
 RUN git clone https://github.com/opencats/OpenCATS.git opencats && \
-    git -C opencats checkout `git -C opencats describe --tags $(git -C opencats rev-list --tags --max-count=1)`
+    cp -r /tmp/opencats/. /var/www/html/
 
-RUN cp -r /tmp/opencats/. /var/www/html/
-
+# Composer installieren
 WORKDIR /var/www/html
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
     composer install
 
+# Berechtigungen setzen
 RUN chown -R www-data:www-data /var/www/html/
 
+# Apache Konfiguration anpassen
 RUN rm -rf /etc/apache2/sites-available/000-default.conf
 RUN echo '<VirtualHost *:80>\n\
     DocumentRoot /var/www/html\n\
@@ -61,6 +65,8 @@ RUN echo '<VirtualHost *:80>\n\
     </Directory>\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
+# Apache Rewrite-Modul aktivieren
 RUN a2enmod rewrite
 
+# Startbefehl für den Apache-Server
 CMD ["apache2-foreground"]
